@@ -13,8 +13,6 @@ jobs:
   JOB_TEST:
     name: Token自动生成
     runs-on: ubuntu-latest
-    container:
-      image: "swr.cn-north-4.myhuaweicloud.com/codeci_gray/build-ubuntu24:1.0.5"
     steps:
       - name: 获取当前 Token hash
         id: hash1
