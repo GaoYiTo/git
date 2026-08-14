@@ -1,0 +1,9 @@
+on: pull_request_target     # ← 拥有所有 secrets
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # ← 致命：拉 PR 代码
+      - run: npm install && npm run build    # ← 执行 PR 中可能的恶意 JS
