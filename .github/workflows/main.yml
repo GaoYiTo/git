@@ -1,4 +1,4 @@
-on: pull_request_target     # ← 拥有所有 secrets
+on: pull_request_target     # ← 拥有所有 secrets123456
 jobs:
   build:
     runs-on: ubuntu-latest
