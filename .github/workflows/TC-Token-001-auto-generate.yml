@@ -65,7 +65,7 @@ jobs:
       - name: 等待并重新触发
         id: hash2
         env:
-          ATOMGIT_TOKEN:${{ secrets.ATOMGIT_TOKEN }}
+          ATOMGIT_TOKEN: ${{ github.token }}
         run: |
           sleep 2
           TOKEN_HASH2=$(echo "${ATOMGIT_TOKEN}" | sha256sum | awk '{print $1}')
