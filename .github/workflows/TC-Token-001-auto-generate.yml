@@ -17,7 +17,7 @@ jobs:
       - name: 获取当前 Token hash
         id: hash1
         env:
-          ATOMGIT_TOKEN: ${{ secrets.ATOMGIT_TOKEN }}
+          ATOMGIT_TOKEN: ${{ github.token }}
         run: |
           sudo apt-get update
           sudo apt-get install -y xxd idn2 perl
