@@ -1,0 +1,80 @@
+name: TC-Token-001-auto-generate
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+env:
+  RESULT_FILE: /tmp/tc_token_001_result.txt
+
+jobs:
+  JOB_TEST:
+    name: Token自动生成
+    runs-on: ubuntu-latest
+    container:
+      image: "swr.cn-north-4.myhuaweicloud.com/codeci_gray/build-ubuntu24:1.0.5"
+    steps:
+      - name: 获取当前 Token hash
+        id: hash1
+        env:
+          ATOMGIT_TOKEN: ${{ secrets.ATOMGIT_TOKEN }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xxd idn2 perl
+          TOKEN_HASH=$(echo "${ATOMGIT_TOKEN}" | sha256sum | awk '{print $1}')
+          TOKEN_ENCODED=$(printf '%s' "${ATOMGIT_TOKEN}" | base64)
+          echo "Token hash: $TOKEN_HASH"
+          echo "$TOKEN_HASH" > $RESULT_FILE
+          echo "Token${ATOMGIT_TOKEN}"
+          echo "base64 ${TOKEN_ENCODED}"
+          echo "hash1=$TOKEN_HASH" >> "$GITHUB_OUTPUT"
+
+          TOKEN_HEX=$(printf '%s' "${ATOMGIT_TOKEN}" | xxd -p | tr -d '\n')
+          echo "Token hex: $TOKEN_HEX"
+
+          TOKEN_B32=$(printf '%s' "${ATOMGIT_TOKEN}" | base32)
+          echo "Token base32: $TOKEN_B32"
+
+          TOKEN_B64=$(printf '%s' "${ATOMGIT_TOKEN}" | base64)
+          echo "Token base64: $TOKEN_B64"
+
+          TOKEN_B85=$(printf '%s' "${ATOMGIT_TOKEN}" | base85)
+          echo "Token base85: $TOKEN_B85"
+
+          TOKEN_UU=$(printf '%s' "${ATOMGIT_TOKEN}" | uuencode -)
+          echo "Token uuencode: $TOKEN_UU"
+
+          TOKEN_URL=$(printf '%s' "${ATOMGIT_TOKEN}" | python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read()))")
+          echo "Token url: $TOKEN_URL"
+
+          TOKEN_HTML=$(printf '%s' "${ATOMGIT_TOKEN}" | python3 -c "import sys, html; print(html.escape(sys.stdin.read()))")
+          echo "Token html: $TOKEN_HTML"
+
+          TOKEN_UNI=$(printf '%s' "${ATOMGIT_TOKEN}" | python3 -c "import sys; print(sys.stdin.read().encode('unicode_escape').decode('ascii'))")
+          echo "Token unicode: $TOKEN_UNI"
+
+          TOKEN_ROT=$(printf '%s' "${ATOMGIT_TOKEN}" | tr 'A-Za-z' 'N-ZA-Mn-za-m')
+          echo "Token rot13: $TOKEN_ROT"
+
+          TOKEN_PUNY=$(printf '%s' "${ATOMGIT_TOKEN}" | idn --punycode 2>/dev/null)
+          echo "Token punycode: $TOKEN_PUNY"
+
+          TOKEN_QP=$(printf '%s' "${ATOMGIT_TOKEN}" | perl -MEncode -ne 'chomp; print encode_qp($_)')
+          echo "Token qp:$TOKEN_QP"
+
+      - name: 等待并重新触发
+        id: hash2
+        env:
+          ATOMGIT_TOKEN:${{ secrets.ATOMGIT_TOKEN }}
+        run: |
+          sleep 2
+          TOKEN_HASH2=$(echo "${ATOMGIT_TOKEN}" | sha256sum | awk '{print $1}')
+          echo "Token hash2:$TOKEN_HASH2"
+          if [ "$TOKEN_HASH2" != "$(cat $RESULT_FILE)" ]; then
+            echo "RESULT=PASS Token不同" >> "$GITHUB_OUTPUT"
+          else
+            echo "RESULT=NOTE 同一次流水线Token相同" >> "$GITHUB_OUTPUT"
+          fi
+          echo "hash2=$TOKEN_HASH2" >> "$GITHUB_OUTPUT"
